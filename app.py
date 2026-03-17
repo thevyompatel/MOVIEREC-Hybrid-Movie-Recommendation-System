@@ -15,26 +15,32 @@ from src.download_data import download_and_extract_data
 # Cache data loading so it's not run on every interaction
 @st.cache_data
 def load_and_prepare_data():
-    if not os.path.exists('data/movies.csv') or not os.path.exists('data/ratings.csv'):
-        # Automatically download dataset if not found (e.g. deployed on Streamlit Cloud)
-        download_and_extract_data()
+    try:
+        if not os.path.exists('data/movies.csv') or not os.path.exists('data/ratings.csv'):
+            st.info("📥 Downloading MovieLens dataset on first run... (This may take 1-2 minutes)")
+            # Automatically download dataset if not found (e.g. deployed on Streamlit Cloud)
+            download_and_extract_data()
+            
+            # Double check if download succeeded
+            if not os.path.exists('data/movies.csv'):
+                st.error("Dataset download failed. Please check your internet connection.")
+                return None, None, None, None, None, None, None
+            
+        movies, ratings = load_data('data/movies.csv', 'data/ratings.csv')
+        movies_clean, ratings_clean = preprocess_data(movies, ratings)
         
-        # Double check if download succeeded
-        if not os.path.exists('data/movies.csv'):
-            return None, None, None, None, None, None, None
+        # Precompute models
+        # Content-based
+        tfidf_matrix, content_sim_matrix = train_content_model(movies_clean)
         
-    movies, ratings = load_data('data/movies.csv', 'data/ratings.csv')
-    movies_clean, ratings_clean = preprocess_data(movies, ratings)
-    
-    # Precompute models
-    # Content-based
-    tfidf_matrix, content_sim_matrix = train_content_model(movies_clean)
-    
-    # Collaborative
-    user_item_matrix = create_user_item_matrix(ratings_clean)
-    collab_movie_ids_list, collab_sim_matrix = train_collaborative_model(user_item_matrix, n_components=50)
-    
-    return movies_clean, ratings_clean, content_sim_matrix, collab_movie_ids_list, collab_sim_matrix, tfidf_matrix, user_item_matrix
+        # Collaborative
+        user_item_matrix = create_user_item_matrix(ratings_clean)
+        collab_movie_ids_list, collab_sim_matrix = train_collaborative_model(user_item_matrix, n_components=50)
+        
+        return movies_clean, ratings_clean, content_sim_matrix, collab_movie_ids_list, collab_sim_matrix, tfidf_matrix, user_item_matrix
+    except Exception as e:
+        st.error(f"❌ Error loading data: {str(e)}")
+        return None, None, None, None, None, None, None
 
 # Function to fetch movie poster
 @st.cache_data
@@ -80,7 +86,7 @@ def main():
         movies_df, ratings_df, content_sim, collab_movie_ids, collab_sim, _, _ = load_and_prepare_data()
         
     if movies_df is None:
-        st.error("Dataset not found! Please run `python src/download_data.py` first.")
+        st.error("❌ Could not load the dataset. Please try reloading the page in a moment. If the problem persists, the dataset download may have failed on the server.")
         st.stop()
         
     # Main Tabs

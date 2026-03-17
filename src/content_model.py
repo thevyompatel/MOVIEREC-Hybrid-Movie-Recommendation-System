@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import linear_kernel
 def train_content_model(movies):
     """
     Builds the content-based recommendation system using TF-IDF on 'genres_text'.
-    Returns the TF-IDF matrix and the cosine similarity matrix.
+    Returns only the TF-IDF matrix to avoid storing a huge NxN similarity matrix.
     """
     # Instantiate TF-IDF Vectorizer
     tfidf = TfidfVectorizer(stop_words='english')
@@ -13,12 +13,9 @@ def train_content_model(movies):
     # Fit and transform the genres data to create the TF-IDF matrix
     tfidf_matrix = tfidf.fit_transform(movies['genres_text'])
     
-    # Compute the cosine similarity matrix using linear_kernel (which is equivalent to cosine similarity for tfidf)
-    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
-    
-    return tfidf_matrix, cosine_sim
+    return tfidf_matrix
 
-def get_content_recommendations(movie_id, movies, cosine_sim, top_n=10):
+def get_content_recommendations(movie_id, movies, tfidf_matrix, top_n=10):
     """
     Get n most similar movies based on content (genres).
     Returns a dataframe of the top recommended movies.
@@ -31,8 +28,9 @@ def get_content_recommendations(movie_id, movies, cosine_sim, top_n=10):
         
     idx = indices[movie_id]
     
-    # Get pairwise similarity scores of all movies with that movie
-    sim_scores = list(enumerate(cosine_sim[idx]))
+    # Compute similarity only for selected movie vs all movies (memory efficient)
+    sim_values = linear_kernel(tfidf_matrix[idx:idx + 1], tfidf_matrix).flatten()
+    sim_scores = list(enumerate(sim_values))
     
     # Sort the movies based on similarity scores in descending order
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)

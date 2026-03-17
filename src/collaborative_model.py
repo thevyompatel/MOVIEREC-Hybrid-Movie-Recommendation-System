@@ -29,12 +29,9 @@ def train_collaborative_model(user_item_matrix, n_components=50):
     svd = TruncatedSVD(n_components=n_components, random_state=42)
     latent_matrix = svd.fit_transform(item_user_matrix)
     
-    # Calculate similarity between all items/movies using their latent representations
-    item_sim_matrix = cosine_similarity(latent_matrix)
-    
-    return item_user_matrix.index.values, item_sim_matrix
+    return item_user_matrix.index.values, latent_matrix
 
-def get_collaborative_recommendations(movie_id, movie_ids_list, item_sim_matrix, movies_df, top_n=10):
+def get_collaborative_recommendations(movie_id, movie_ids_list, latent_matrix, movies_df, top_n=10):
     """
     Provides movie recommendations based on collaborative filtering item-to-item similarity.
     """
@@ -44,8 +41,9 @@ def get_collaborative_recommendations(movie_id, movie_ids_list, item_sim_matrix,
         
     idx = list(movie_ids_list).index(movie_id)
     
-    # Get similarity scores
-    sim_scores = list(enumerate(item_sim_matrix[idx]))
+    # Compute similarity only for selected movie vs all movies (memory efficient)
+    sim_values = cosine_similarity(latent_matrix[idx:idx + 1], latent_matrix).flatten()
+    sim_scores = list(enumerate(sim_values))
     
     # Sort them in descending order
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)

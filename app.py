@@ -17,13 +17,11 @@ from src.download_data import download_and_extract_data
 def load_and_prepare_data():
     try:
         if not os.path.exists('data/movies.csv') or not os.path.exists('data/ratings.csv'):
-            st.info("📥 Downloading MovieLens dataset on first run... (This may take 1-2 minutes)")
             # Automatically download dataset if not found (e.g. deployed on Streamlit Cloud)
             download_and_extract_data()
             
             # Double check if download succeeded
             if not os.path.exists('data/movies.csv'):
-                st.error("Dataset download failed. Please check your internet connection.")
                 return None, None, None, None, None, None, None
             
         movies, ratings = load_data('data/movies.csv', 'data/ratings.csv')
@@ -31,16 +29,15 @@ def load_and_prepare_data():
         
         # Precompute models
         # Content-based
-        tfidf_matrix, content_sim_matrix = train_content_model(movies_clean)
+        tfidf_matrix = train_content_model(movies_clean)
         
         # Collaborative
         user_item_matrix = create_user_item_matrix(ratings_clean)
-        collab_movie_ids_list, collab_sim_matrix = train_collaborative_model(user_item_matrix, n_components=50)
+        collab_movie_ids_list, collab_latent_matrix = train_collaborative_model(user_item_matrix, n_components=50)
         
-        return movies_clean, ratings_clean, content_sim_matrix, collab_movie_ids_list, collab_sim_matrix, tfidf_matrix, user_item_matrix
+        return movies_clean, ratings_clean, tfidf_matrix, collab_movie_ids_list, collab_latent_matrix, user_item_matrix
     except Exception as e:
-        st.error(f"❌ Error loading data: {str(e)}")
-        return None, None, None, None, None, None, None
+        return None, None, None, None, None, None
 
 # Function to fetch movie poster
 @st.cache_data
@@ -83,7 +80,7 @@ def main():
 
     # Display Loading Message
     with st.spinner("Loading and processing data..."):
-        movies_df, ratings_df, content_sim, collab_movie_ids, collab_sim, _, _ = load_and_prepare_data()
+        movies_df, ratings_df, tfidf_matrix, collab_movie_ids, collab_latent_matrix, _ = load_and_prepare_data()
         
     if movies_df is None:
         st.error("❌ Could not load the dataset. Please try reloading the page in a moment. If the problem persists, the dataset download may have failed on the server.")
@@ -107,9 +104,9 @@ def main():
                 recommendations = get_hybrid_recommendations(
                     movie_id=movie_id,
                     movies_df=movies_df,
-                    content_sim_matrix=content_sim,
+                    tfidf_matrix=tfidf_matrix,
                     collab_movie_ids_list=collab_movie_ids,
-                    collab_sim_matrix=collab_sim,
+                    collab_latent_matrix=collab_latent_matrix,
                     weight_content=weight_content,
                     weight_collab=weight_collab,
                     top_n=10

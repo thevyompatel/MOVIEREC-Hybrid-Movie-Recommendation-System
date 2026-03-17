@@ -3,18 +3,18 @@ from src.content_model import get_content_recommendations
 from src.collaborative_model import get_collaborative_recommendations
 
 def get_hybrid_recommendations(movie_id, movies_df, 
-                               content_sim_matrix,
-                               collab_movie_ids_list, collab_sim_matrix,
+                               tfidf_matrix,
+                               collab_movie_ids_list, collab_latent_matrix,
                                weight_content=0.5, weight_collab=0.5, top_n=10):
     """
     Combines Content-Based and Collaborative Filtering recommendations.
     Weights are adjustable.
     """
     # Get Content-Based Recommendations
-    content_recs = get_content_recommendations(movie_id, movies_df, content_sim_matrix, top_n=top_n * 5)
+    content_recs = get_content_recommendations(movie_id, movies_df, tfidf_matrix, top_n=top_n * 5)
     
     # Get Collaborative Filtering Recommendations
-    collab_recs = get_collaborative_recommendations(movie_id, collab_movie_ids_list, collab_sim_matrix, movies_df, top_n=top_n * 5)
+    collab_recs = get_collaborative_recommendations(movie_id, collab_movie_ids_list, collab_latent_matrix, movies_df, top_n=top_n * 5)
     
     if content_recs.empty and collab_recs.empty:
         return pd.DataFrame()

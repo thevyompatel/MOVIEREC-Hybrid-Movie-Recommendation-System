@@ -41,6 +41,9 @@ This project is fully designed for scale, structured like an enterprise-level ML
 
 ## 🚀 Live Demo & Deployment
 
+### Live Demo
+https://movierec-hybrid-movie-recommendation-system-gxvprwcb4s9z9qpato.streamlit.app/
+
 1. 🌐 Streamlit Community Cloud (Recommended)
 
 You already designed for this — fastest path.
@@ -74,8 +77,8 @@ TMDB_API_KEY=your_api_key_here
 
 Click Deploy
 
-💡 Example Live Demo (structure)
-https://movie-recommender-hybrid.streamlit.app
+💡 Live Demo
+https://movierec-hybrid-movie-recommendation-system-gxvprwcb4s9z9qpato.streamlit.app/
 ---
 
 ## 💻 Local Installation & Usage

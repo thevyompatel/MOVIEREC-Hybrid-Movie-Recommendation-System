@@ -41,16 +41,41 @@ This project is fully designed for scale, structured like an enterprise-level ML
 
 ## 🚀 Live Demo & Deployment
 
-This application supports effortless 1-click deployment on **Streamlit Community Cloud**.
+1. 🌐 Streamlit Community Cloud (Recommended)
 
-Because the repository utilizes an auto-download script (`src/download_data.py`), you **never** have to upload 100MB+ `.csv` datasets to GitHub. The app provisions its own data dynamically.
+You already designed for this — fastest path.
 
-1.  Fork or clone this repository to your GitHub account.
-2.  Go to [share.streamlit.io](https://share.streamlit.io/).
-3.  Click **New App** -> Select this repository.
-4.  Set the **Main file path** to `app.py`.
-5.  Click **Deploy**.
+🔗 Deploy here:
 
+👉 https://share.streamlit.io/
+
+✅ What you’ll get
+
+Public URL like:
+https://your-username-movie-recommender-app-xyz.streamlit.app
+
+⚡ Steps (optimized)
+
+Push your repo to GitHub
+
+Go to Streamlit Cloud
+
+Select:
+
+Repo: movie-recommender
+
+Branch: main
+
+File: app.py
+
+Add Secrets (for TMDB API):
+
+TMDB_API_KEY=your_api_key_here
+
+Click Deploy
+
+💡 Example Live Demo (structure)
+https://movie-recommender-hybrid.streamlit.app
 ---
 
 ## 💻 Local Installation & Usage
